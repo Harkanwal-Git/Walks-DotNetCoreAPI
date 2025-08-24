@@ -1,7 +1,10 @@
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Walks.API.Data;
+using Walks.API.Mappings;
+using Walks.API.Repositories;
 
 namespace WalksAPI
 {
@@ -20,6 +23,11 @@ namespace WalksAPI
 
             builder.Services.AddDbContext<WalksDBContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("WalksConnectionString")));
+
+            builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
+            builder.Services.AddScoped<IWalkRepository, SQLWalkRepository>();
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<AutoMapperProfiles>());
+           // builder.Services.AddAutoMapper(cfg => { },typeof(AutoMapperProfiles));
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

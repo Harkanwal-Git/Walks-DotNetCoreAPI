@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Walks.API.Data;
 
@@ -11,9 +12,11 @@ using Walks.API.Data;
 namespace Walks.API.Migrations
 {
     [DbContext(typeof(WalksDBContext))]
-    partial class WalksDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250822022015_Update Seeds")]
+    partial class UpdateSeeds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
