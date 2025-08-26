@@ -19,10 +19,38 @@ namespace Walks.API.Repositories
             return walk;
         }
 
-        public async Task<List<Walk>> GetAllAsync()
+        public async Task<List<Walk>> GetAllAsync(string? filterOn = null, string? filterQuery = null, string? sortBy = null, bool isAscending = true,
+            int pageNumber = 1, int pageSize = 1000)
         {
-            return await dBContext.Walks.Include(x=>x.Difficulty).Include("Region").ToListAsync();
-            
+            var walks = dBContext.Walks.Include(x => x.Difficulty).Include("Region").AsQueryable();
+            //filtering
+            if (!string.IsNullOrWhiteSpace(filterOn) && !string.IsNullOrWhiteSpace(filterQuery))
+            {
+                if (filterOn.Equals("Name", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    walks = walks.Where(x => x.Name.Contains(filterQuery));
+                }
+
+            }
+
+            //Sorting
+            if (!string.IsNullOrWhiteSpace(sortBy))
+            {
+                if (sortBy.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending ? walks.OrderBy(x => x.Name) : walks.OrderByDescending(x => x.Name);
+                }
+                else if (sortBy.Equals("Length", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending ? walks.OrderBy(x => x.LengthInKms) : walks.OrderByDescending(x => x.LengthInKms);
+                }
+            }
+            //Pagination
+            int skipCounter = (pageNumber - 1) * pageSize;
+            walks = walks.Skip(skipCounter).Take(pageSize);
+            return await walks.ToListAsync();
+            //return await dBContext.Walks.Include(x=>x.Difficulty).Include("Region").ToListAsync();
+
         }
         public async Task<Walk?> GetByIdAsync(Guid id)
         {
@@ -32,14 +60,14 @@ namespace Walks.API.Repositories
         public async Task<Walk?> UpdateAsync(Guid id, Walk walk)
         {
             //var existingWalk = await dBContext.Walks.FindAsync(id); //ignores include
-            var existingWalk = await dBContext.Walks.FirstOrDefaultAsync(x=>x.Id==id);
+            var existingWalk = await dBContext.Walks.FirstOrDefaultAsync(x => x.Id == id);
 
             if (existingWalk == null) { return null; }
             existingWalk.Name = walk.Name;
             existingWalk.DifficultyId = walk.DifficultyId;
             existingWalk.RegionId = walk.RegionId;
-            existingWalk.Description=walk.Description;
-            existingWalk.WalkImageUrl=walk.WalkImageUrl;
+            existingWalk.Description = walk.Description;
+            existingWalk.WalkImageUrl = walk.WalkImageUrl;
             existingWalk.LengthInKms = walk.LengthInKms;
 
             await dBContext.SaveChangesAsync();

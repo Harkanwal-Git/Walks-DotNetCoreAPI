@@ -1,10 +1,13 @@
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Walks.API.Data;
 using Walks.API.Mappings;
 using Walks.API.Repositories;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace WalksAPI
 {
@@ -27,7 +30,22 @@ namespace WalksAPI
             builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
             builder.Services.AddScoped<IWalkRepository, SQLWalkRepository>();
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<AutoMapperProfiles>());
-           // builder.Services.AddAutoMapper(cfg => { },typeof(AutoMapperProfiles));
+            // builder.Services.AddAutoMapper(cfg => { },typeof(AutoMapperProfiles));
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(Options =>
+                Options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+
+                    ValidIssuer=builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -38,6 +56,7 @@ namespace WalksAPI
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
