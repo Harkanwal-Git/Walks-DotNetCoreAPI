@@ -12,7 +12,7 @@ namespace Walks.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]             //This by default does model state validation check. If not present then use ModelState.IsValid
-    [Authorize]
+    
     public class RegionsController : ControllerBase
     {
         private readonly WalksDBContext _dbContext;
@@ -27,6 +27,7 @@ namespace Walks.API.Controllers
 
         //Get All Regions
         [HttpGet]
+        [Authorize(Roles ="Reader")]
         public async Task<IActionResult> GetRegions()
         {
 
@@ -54,6 +55,7 @@ namespace Walks.API.Controllers
         }
 
         [HttpGet("{id:Guid}")]
+        [Authorize(Roles ="Reader")]
         public async Task<IActionResult> GetRegionById([FromRoute] Guid id)
         {
             // var region = await _dbContext.Regions.FirstOrDefaultAsync(r => r.Id == id.Value);
@@ -75,6 +77,7 @@ namespace Walks.API.Controllers
         }
 
         [HttpPost]
+  
         public async Task<IActionResult> Create([FromBody] AddRegionRequestDto addRegionRequestDto)
         {
             if (ModelState.IsValid)
@@ -113,6 +116,7 @@ namespace Walks.API.Controllers
         }
         //Update region
         [HttpPut("{id}")]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> Update([FromRoute]Guid id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
         {
             // //Check if region exists
@@ -151,6 +155,7 @@ namespace Walks.API.Controllers
         //Delete a region
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> Delete(Guid id)
         {
             //var regionDomainModel= await _dbContext.Regions.FirstOrDefaultAsync(r => r.Id == id);
