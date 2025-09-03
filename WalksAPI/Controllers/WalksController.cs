@@ -39,6 +39,8 @@ namespace Walks.API.Controllers
             [FromQuery] string? sortBy, [FromQuery] bool? isAscending, [FromQuery]int pageNumber=1, [FromQuery]int pageSize=1000)
         {
             var walks = await _walkRepository.GetAllAsync(filterOn, filterQuery, sortBy, isAscending ?? true,pageNumber,pageSize);
+
+            throw new Exception("Some issue happend, Testing Global exception handling");
             if (walks == null)
             {
                 return NotFound();

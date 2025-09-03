@@ -11,6 +11,8 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.FileProviders;
+using Serilog;
+using Walks.API.Middlewares;
 
 namespace WalksAPI
 {
@@ -18,8 +20,15 @@ namespace WalksAPI
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            var logger = new LoggerConfiguration()
+                .MinimumLevel.Error()
+                .WriteTo.Console()
+                .WriteTo.File("Logs/Walks_Logs.txt", rollingInterval: RollingInterval.Minute)
+                .CreateLogger();
 
+            var builder = WebApplication.CreateBuilder(args);
+            builder.Logging.ClearProviders();
+            builder.Logging.AddSerilog(logger);
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -108,6 +117,8 @@ namespace WalksAPI
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseMiddleware<ExceptionHandlerMiddleware>();
 
             app.UseHttpsRedirection();
             app.UseAuthentication();

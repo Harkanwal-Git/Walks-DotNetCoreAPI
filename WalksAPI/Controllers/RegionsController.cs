@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using Walks.API.Data;
 using Walks.API.Models.Domain;
 using Walks.API.Models.DTO;
@@ -18,40 +19,55 @@ namespace Walks.API.Controllers
         private readonly WalksDBContext _dbContext;
         private readonly IRegionRepository _regionRepository;
         private readonly IMapper _mapper;
-        public RegionsController(WalksDBContext dbContext,IRegionRepository regionRepository,IMapper mapper)
+        private readonly ILogger<RegionsController> _logger;
+
+        public RegionsController(WalksDBContext dbContext,IRegionRepository regionRepository,IMapper mapper,
+            ILogger<RegionsController> logger)
         {
             _dbContext = dbContext;
             _regionRepository = regionRepository;
             _mapper = mapper;
+            this._logger = logger;
         }
 
         //Get All Regions
         [HttpGet]
-        [Authorize(Roles ="Reader")]
+        //[Authorize(Roles ="Reader")]
         public async Task<IActionResult> GetRegions()
         {
+            try
+            {
+                throw new Exception("This is a custom exception");
+                _logger.LogInformation("GetAllRegions Action Method was invoked");
+                _logger.LogError("THis is a test Error log");
+                //var regions=_dbContext.Regions;  //returns IQueryable
+                //var regions = await _dbContext.Regions.ToListAsync();  //loads into memory
 
-            //var regions=_dbContext.Regions;  //returns IQueryable
-            //var regions = await _dbContext.Regions.ToListAsync();  //loads into memory
-
-            var regions=await _regionRepository.GetAllAsync();
-          
-
-            var regionsDto = _mapper.Map<List<RegionDto>>(regions);
-
-            //foreach (var region in regions)
-            //{
-            //    regionsDto.Add(new RegionDto
-            //    {
-            //        Id = region.Id,
-            //        Code = region.Code,
-            //        Name = region.Name,
-            //        RegionImageUrl = region.RegionImageUrl
-            //    });
-            //}
+                var regions = await _regionRepository.GetAllAsync();
 
 
-            return Ok(regionsDto);
+                var regionsDto = _mapper.Map<List<RegionDto>>(regions);
+                _logger.LogInformation($"Finished GetAllRegions request with data: {JsonSerializer.Serialize(regionsDto)}");
+
+                //foreach (var region in regions)
+                //{
+                //    regionsDto.Add(new RegionDto
+                //    {
+                //        Id = region.Id,
+                //        Code = region.Code,
+                //        Name = region.Name,
+                //        RegionImageUrl = region.RegionImageUrl
+                //    });
+                //}
+
+
+                return Ok(regionsDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,ex.Message);
+                throw;
+            }
         }
 
         [HttpGet("{id:Guid}")]
